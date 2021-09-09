@@ -68,15 +68,8 @@ def subscribe_billing_reserve():
         '정기 결제 테스트 아이템',
         3000,
         '12345',
-        [],
-        {},
-        {},
-        0,
-        0,
-        0,
-        None,
-        None,
-        time.time() + 10 # 10초 뒤 결제
+        time.time() + 10
+
     )
     print(result)
 
