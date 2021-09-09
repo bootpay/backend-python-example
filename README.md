@@ -1,9 +1,6 @@
 
-## Bootpay Python Server Side Library
-부트페이 공식 파이썬 라이브러리 입니다 (서버사이드 용)
-* PG 결제창 연동은 클라이언트 라이브러리에서 수행됩니다. (Javascript, Android, iOS, React Native, Flutter 등)
-* 결제 검증 및 취소, 빌링키 발급, 본인인증 등의 수행은 서버사이드에서 진행됩니다. (Java, PHP, Python, Ruby, Node.js, Go, ASP.NET 등)
-
+## Bootpay Python Example 
+부트페이 공식 파이썬 라이브러리를 적용한 샘플 프로젝트 입니다
 
 ## 프로젝트 실행하기
 ```
