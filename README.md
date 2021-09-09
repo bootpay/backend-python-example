@@ -252,11 +252,7 @@ try {
     e.printStackTrace();
 }
 ```
-
-## Example 프로젝트
-
-[적용한 샘플 프로젝트](https://github.com/bootpay/backend-java-example)을 참조해주세요
-
+ 
 ## Documentation
 
 [부트페이 개발매뉴얼](https://bootpay.gitbook.io/docs/)을 참조해주세요
