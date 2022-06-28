@@ -1,97 +1,107 @@
-from bootpay import Bootpay
+
+from bootpay_backend import BootpayBackend
 import time
+import uuid 
+import datetime
 
-rest_application_id = '5b8f6a4d396fa665fdc2b5ea'
-rest_private_key = 'rm6EYECr6aroQVG2ntW0A6LpWnkTgP4uQ3H18sDDUYw='
-bootpay = Bootpay(rest_application_id, rest_private_key)
+bootpay = BootpayBackend('5b8f6a4d396fa665fdc2b5ea', 'rm6EYECr6aroQVG2ntW0A6LpWnkTgP4uQ3H18sDDUYw=')
 
 
-# 1. 토큰 발급
+# 1. (부트페이 통신을 위한) 토큰 발급
 def get_token():
-    result = bootpay.get_access_token()
-    print(result)
-    print(result['data']['token'])
+    token = bootpay.get_access_token() 
+    if 'error_code' not in token:
+        # 토큰 발급 성공 
+        print(token)
 
 
-# 2. 결제 검증
-def verification():
-    receipt_id = '612df0250d681b001de61de6'
-    result = bootpay.verify(receipt_id)
-    print(result)
+# 2. 결제 단건 조회 
+def get_receipt(): 
+    response = bootpay.receipt_payment('62b2c3c2d01c7e001bc20b10')
+    print(response)
 
 
 # 3. 결제 취소 (전액 취소 / 부분 취소)
 def cancel():
-    receipt_id = '612df0250d681b001de61de6'
-    result = bootpay.cancel(
-        receipt_id,
+    response = bootpay.cancel_payment(
+        receipt_id='62ba5a3cd01c7e001fb45c46', 
+        cancel_id=str(uuid.uuid4()),
+        cancel_username='test', 
+        cancel_message='test결제 취소'
+    )
+    print(response)
+
+
+# 4-1. 빌링키 발급
+def get_billing_key():
+    result = bootpay.request_subscribe_billing_key(
+        pg='나이스페이',
+        order_name='테스트결제',
+        subscription_id=str(time.time()),
+        card_no="5570********1074", # 카드번호 
+        card_pw="**", # 카드 비밀번호 2자리 
+        card_identity_no="******", # 카드 소주 생년월일 
+        card_expire_year="**", # 카드 유효기간 년 2자리 
+        card_expire_month="**",  # 카드 유효기간 월 2자리 
+
     )
     print(result)
 
-
-# 4. 빌링키 발급
-def get_billing_key():
-    result = bootpay.get_subscribe_billing_key(
-        'nicepay',
-        '1234-1234-1234',
-        '30일 결제권',
-        '[ 카드 번호 ]',
-        '[ 카드 비밀번호 앞자리 2개 ]',
-        '[ 카드 만료 연도 2자리 ]',
-        '[ 카드 만료 월 2자리 ]',
-        '[ 카드 소유주 생년월일 혹은 사업자 등록번호 ]',
-        None,
-        {
-            'subscribe_test_payment': 1
+# 4-2. 발급된 빌링키로 결제 승인 요청
+def subscribe_billing():
+    response = bootpay.request_subscribe_card_payment(
+        billing_key='62b2c3cfd01c7e001cc20a84',
+        order_name='테스트결제',
+        order_id=str(time.time()),
+        price=100,
+        user={
+            "phone": '01000000000',
+            "username": '홍길동',
+            "email": 'test@bootpay.co.kr'
         }
     )
-    print(result)
+    print(response)
 
-# 4-1. 발급된 빌링키로 결제 승인 요청
-def subscribe_billing():
-    billing_key = '612deb53019943001fb52312'
-    result = bootpay.subscribe_billing(
-        billing_key,
-        '정기 결제 테스트 아이템',
-        3000,
-        '12345',
-        [],
-        {'username': 'test'}
-    )
-    print(result)
-
-# 4-2. 발급된 빌링키로 결제 예약 요청
+# 4-3. 발급된 빌링키로 결제 예약 요청
 def subscribe_billing_reserve():
-    billing_key = '612deb53019943001fb52312'
-    result = bootpay.subscribe_billing_reserve(
-        billing_key,
-        '정기 결제 테스트 아이템',
-        3000,
-        '12345',
-        time.time() + 10
-
+    response = bootpay.subscribe_payment_reserve(
+        billing_key='[ 빌링키 ]',
+        order_name='테스트결제',
+        order_id=str(time.time()),
+        price=1000,
+        user={
+            "phone": '01000000000',
+            "username": '홍길동',
+            "email": 'test@bootpay.co.kr'
+        },
+        reserve_execute_at=(datetime.datetime.now() + datetime.timedelta(seconds=5)).astimezone().strftime(
+            '%Y-%m-%dT%H:%M:%S%z')
     )
-    print(result)
+    print(response)
 
-# 4-2-1. 발급된 빌링키로 결제 예약 - 취소 요청
+# 4-4. 발급된 빌링키로 결제 예약 - 취소 요청
 def subscribe_billing_reserve_cancel():
     reserve_id = '612debc70d681b0039e6133d'
-    result = bootpay.subscribe_billing_reserve_cancel(
+    result = bootpay.cancel_subscribe_reserve(
         reserve_id
     )
     print(result)
 
-# 4-3. 빌링키 삭제
+# 4-5. 빌링키 삭제
 def destroy_subscribe_billing_key():
-    billing_key = '612debc70d681b0039e6133d'
-    result = bootpay.destroy_subscribe_billing_key(
-        billing_key
+    response = bootpay.destroy_billing_key(
+        billing_key='62b2c3cfd01c7e001cc20a85',
     )
-    print(result)
+    print(response)
 
-# 5. (부트페이 단독 - 간편결제창, 생체인증 기반의 사용자를 위한) 사용자 토큰 발급
+# 4-6. 빌링키 조회
+def lookup_billing_key():    
+    response = bootpay.lookup_subscribe_billing_key('62b2c3c2d01c7e001bc20b10')
+    print(response)
+
+# 5. (생체인증, 비밀번호 결제를 위한) 구매자 토큰 발급
 def get_user_token():
-    result = bootpay.get_user_token({
+    result = bootpay.request_user_token({
         'user_id': '12341-234',
         'email': 'test@email.com',
         'name': '홍길동',
@@ -101,43 +111,47 @@ def get_user_token():
     })
     print(result)
 
-# 6. 결제링크 생성
-def request_payment():
-    result = bootpay.request_payment({
-        'pg': 'kcp',
-        'method': 'card',
-        'order_id': '1234-1234',
-        'price': 1000,
-        'name': '테스트 부트페이 상품',
-        'return_url': 'https://www.yourdomain.com/callback',
-        'extra': {
-            'expire': 30
-        }
-    })
+# 6. 서버 승인 요청
+def server_confirm():
+    result = bootpay.confirm_payment(
+        receipt_id='612df0250d681b001de61de6'
+    )
     print(result)
 
-# 7. 서버 승인 요청
-def server_submit():
-    result = bootpay.submit('')
-    print(result)
-
-# 8. 본인 인증 결과 검증
+# 7. 본인 인증 결과 조회
 def certificate():
-    receipt_id = '612df0250d681b001de61de6'
-    result = bootpay.certificate(receipt_id)
+    result = bootpay.certificate(
+        receipt_id='612df0250d681b001de61de6'
+    )
     print(result)
+
+# 8. (에스크로 이용시) PG사로 배송정보 보내기
+def shipping_start():
+    response = bootpay.shipping_start(
+        receipt_id="62a946aad01c7e001b7dc20b",
+        tracking_number='3989838',
+        delivery_corp='CJ대한통운',
+        user={
+            "phone": '01000000000',
+            "username": '홍길동',
+            "address": "서울특별시 종로구",
+            "zipcode": "039899"
+        }
+    )
+    print(response)
 
 
 # 실행 부분
 get_token()
-verification()
+get_receipt()
 cancel()
 get_billing_key()
 subscribe_billing()
 subscribe_billing_reserve()
 subscribe_billing_reserve_cancel()
 destroy_subscribe_billing_key()
+lookup_billing_key()
 get_user_token()
-request_payment()
-server_submit()
+server_confirm() 
 certificate()
+shipping_start()
