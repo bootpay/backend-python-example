@@ -34,7 +34,7 @@ def cancel():
 
 # 4-1. 빌링키 발급
 def get_billing_key():
-    result = bootpay.request_subscribe_billing_key(
+    response = bootpay.request_subscribe_billing_key(
         pg='나이스페이',
         order_name='테스트결제',
         subscription_id=str(time.time()),
@@ -45,7 +45,7 @@ def get_billing_key():
         card_expire_month="**",  # 카드 유효기간 월 2자리 
 
     )
-    print(result)
+    print(response)
 
 # 4-2. 발급된 빌링키로 결제 승인 요청
 def subscribe_billing():
@@ -81,9 +81,8 @@ def subscribe_billing_reserve():
 
 # 4-4. 발급된 빌링키로 결제 예약 - 취소 요청
 def subscribe_billing_reserve_cancel():
-    reserve_id = '612debc70d681b0039e6133d'
     result = bootpay.cancel_subscribe_reserve(
-        reserve_id
+        '612debc70d681b0039e6133d'
     )
     print(result)
 
