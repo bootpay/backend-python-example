@@ -4,7 +4,7 @@
 
 ## 프로젝트 실행하기
 ```
-pip install bootpay
+pip install bootpay-backend
 python example.py
 ```
 
